@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Adstrra Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Baloo+Da+2:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0fdf4;--surface:#fff;--card:#fff;
+  --green:#16a34a;--green-light:#dcfce7;--green-dark:#15803d;--green-mid:#22c55e;
+  --red:#ef4444;--red-light:#fee2e2;
+  --blue:#3b82f6;--blue-light:#dbeafe;
+  --yellow:#f59e0b;--yellow-light:#fef3c7;
+  --border:#e2e8f0;--border-green:#bbf7d0;
+  --text:#1e293b;--text2:#475569;--muted:#94a3b8;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 12px rgba(0,0,0,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Hind Siliguri',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#adminLogin{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.login-box{background:var(--white,#fff);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;max-width:380px;width:100%;box-shadow:var(--shadow-md);}
+.login-title{font-family:'Baloo Da 2',sans-serif;font-size:1.6rem;font-weight:800;color:var(--green);text-align:center;margin-bottom:1.5rem;}
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:4px;}
+.fg input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+.fg input:focus{border-color:var(--green);}
+.login-btn{width:100%;padding:11px;border:none;border-radius:12px;background:var(--green);color:#fff;font-family:'Baloo Da 2',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;}
+.login-btn:hover{background:var(--green-dark);}
+.login-err{color:var(--red);font-size:.82rem;text-align:center;margin-top:.6rem;display:none;}
+
+/* LAYOUT */
+#adminApp{display:none;min-height:100vh;}
+.admin-nav{background:var(--green);color:#fff;padding:.8rem 1.4rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(22,163,74,0.3);}
+.admin-logo{font-family:'Baloo Da 2',sans-serif;font-size:1.2rem;font-weight:800;}
+.logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,0.3);}
+
+.admin-shell{display:flex;min-height:calc(100vh - 50px);}
+
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--surface);border-right:1px solid var(--border);padding:1rem .6rem;flex-shrink:0;}
+@media(max-width:640px){.sidebar{width:60px;}}
+.s-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:pointer;border:none;background:none;width:100%;color:var(--text2);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:500;transition:all .2s;margin-bottom:3px;white-space:nowrap;}
+.s-btn:hover{background:var(--green-light);color:var(--green-dark);}
+.s-btn.active{background:var(--green-light);color:var(--green);font-weight:700;}
+.s-icon{font-size:1.1rem;flex-shrink:0;}
+@media(max-width:640px){.s-btn span.s-lbl{display:none;}}
+
+/* MAIN */
+.admin-main{flex:1;padding:1.2rem;overflow-x:hidden;}
+.section{display:none;}
+.section.active{display:block;}
+.sec-title{font-family:'Baloo Da 2',sans-serif;font-size:1.3rem;font-weight:800;color:var(--text);margin-bottom:1rem;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.card-title{font-family:'Baloo Da 2',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:.8rem;color:var(--text);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin-bottom:1.2rem;}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem;text-align:center;}
+.stat-c .sv{font-family:'Baloo Da 2',sans-serif;font-size:1.6rem;font-weight:800;color:var(--green);}
+.stat-c .sl{font-size:.72rem;color:var(--muted);margin-top:2px;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.82rem;}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);}
+th{font-weight:700;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;background:var(--bg);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,.01);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:700;}
+.badge.pending{background:var(--yellow-light);color:#92400e;}
+.badge.approved{background:var(--green-light);color:var(--green-dark);}
+.badge.rejected{background:var(--red-light);color:var(--red);}
+
+/* BUTTONS */
+.btn{padding:5px 12px;border:none;border-radius:7px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;transition:all .2s;}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:var(--green-dark);}
+.btn-red{background:var(--red);color:#fff;}.btn-red:hover{background:#dc2626;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-yellow{background:var(--yellow);color:#fff;}
+.btn-sm{padding:4px 10px;font-size:.75rem;}
+.btn-row{display:flex;gap:.4rem;flex-wrap:wrap;}
+
+/* FORM */
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+@media(max-width:500px){.form-row-2{grid-template-columns:1fr;}}
+.fl{display:flex;flex-direction:column;gap:4px;margin-bottom:.7rem;}
+.fl label{font-size:.78rem;font-weight:600;color:var(--text2);}
+.fl input,.fl select{padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'Hind Siliguri',sans-serif;font-size:.87rem;outline:none;transition:border-color .2s;}
+.fl input:focus,.fl select:focus{border-color:var(--green);}
+.green-btn{width:100%;padding:10px;border:none;border-radius:10px;background:var(--green);color:#fff;font-family:'Baloo Da 2',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;margin-top:.3rem;}
+.green-btn:hover{background:var(--green-dark);}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:10px 18px;border-radius:20px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;}
+.toast.show{opacity:1;}
+.toast.red{background:var(--red);}
+
+/* LOADING */
+.loader{position:fixed;inset:0;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:.6rem;}
+.spinner{width:36px;height:36px;border:4px solid var(--border-green);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOGIN -->
+<div id="adminLogin">
+  <div class="login-box">
+    <div class="login-title">🔐 Admin Panel<br/><span style="font-size:.95rem;color:var(--muted);font-weight:500">Adstrra Earn</span></div>
+    <div class="fg"><label>ইমেল</label><input type="email" id="adminEmail" placeholder="admin@email.com"/></div>
+    <div class="fg"><label>পাসওয়ার্ড</label><input type="password" id="adminPass" placeholder="পাসওয়ার্ড"/></div>
+    <button class="login-btn" onclick="adminLogin()">লগইন</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loader" id="loader" style="display:none"><div class="spinner"></div><p style="color:var(--muted);font-size:.82rem">লোড হচ্ছে...</p></div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="admin-nav">
+    <div class="admin-logo">⚙️ Adstrra Admin</div>
+    <button class="logout-btn" onclick="adminLogout()">লগআউট</button>
+  </div>
+  <div class="admin-shell">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <button class="s-btn active" onclick="showSec('overview',this)"><span class="s-icon">📊</span><span class="s-lbl">Overview</span></button>
+      <button class="s-btn" onclick="showSec('ads',this)"><span class="s-icon">📺</span><span class="s-lbl">Ads</span></button>
+      <button class="s-btn" onclick="showSec('visits',this)"><span class="s-icon">🌐</span><span class="s-lbl">Visits</span></button>
+      <button class="s-btn" onclick="showSec('users',this)"><span class="s-icon">👥</span><span class="s-lbl">Users</span></button>
+      <button class="s-btn" onclick="showSec('bonus',this)"><span class="s-icon">🎁</span><span class="s-lbl">Bonus</span></button>
+      <button class="s-btn" onclick="showSec('deposit',this)"><span class="s-icon">💰</span><span class="s-lbl">Deposit</span></button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="admin-main">
+
+      <!-- OVERVIEW -->
+      <div class="section active" id="sec-overview">
+        <div class="sec-title">📊 Overview</div>
+        <div class="stats-row">
+          <div class="stat-c"><div class="sv" id="ovTotalUsers">0</div><div class="sl">মোট ইউজার</div></div>
+          <div class="stat-c"><div class="sv" id="ovPendingAds">0</div><div class="sl">পেন্ডিং অ্যাড</div></div>
+          <div class="stat-c"><div class="sv" id="ovActiveAds">0</div><div class="sl">সক্রিয় অ্যাড</div></div>
+          <div class="stat-c"><div class="sv" id="ovPendingVisits">0</div><div class="sl">পেন্ডিং ভিজিট</div></div>
+          <div class="stat-c"><div class="sv" id="ovTotalTx">0</div><div class="sl">লেনদেন</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ পেন্ডিং অ্যাড (দ্রুত অ্যাপ্রুভ)</div>
+          <div id="quickPendingAds"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ পেন্ডিং ভিজিট (দ্রুত অ্যাপ্রুভ)</div>
+          <div id="quickPendingVisits"></div>
+        </div>
+      </div>
+
+      <!-- ADS -->
+      <div class="section" id="sec-ads">
+        <div class="sec-title">📺 সব অ্যাড</div>
+        <div class="card">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>শিরোনাম</th><th>লিংক</th><th>ভিউ</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="adsTableBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- VISITS -->
+      <div class="section" id="sec-visits">
+        <div class="sec-title">🌐 সব ভিজিট</div>
+        <div class="card">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>নাম</th><th>URL</th><th>ভিজিট</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="visitsTableBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="section" id="sec-users">
+        <div class="sec-title">👥 সব ইউজার</div>
+        <div class="card">
+          <div class="card-title">💎 ম্যানুয়ালি ডায়মন্ড দিন</div>
+          <div class="form-row-2">
+            <div class="fl"><label>ইউজার ইমেল</label><input type="email" id="giveEmail" placeholder="user@email.com"/></div>
+            <div class="fl"><label>ডায়মন্ড পরিমাণ</label><input type="number" id="giveAmount" placeholder="100" min="1"/></div>
+          </div>
+          <button class="green-btn" onclick="giveDiamond()">💎 ডায়মন্ড দিন</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>নাম</th><th>ইমেল</th><th>ব্যালেন্স</th><th>অ্যাড</th><th>ভিজিট</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- BONUS CODES -->
+      <div class="section" id="sec-bonus">
+        <div class="sec-title">🎁 বোনাস কোড</div>
+        <div class="card">
+          <div class="card-title">➕ নতুন বোনাস কোড তৈরি করুন</div>
+          <div class="form-row-2">
+            <div class="fl"><label>কোড (বড় হাতে)</label><input type="text" id="newCodeName" placeholder="WELCOME50" style="text-transform:uppercase"/></div>
+            <div class="fl"><label>💎 পরিমাণ</label><input type="number" id="newCodeAmount" placeholder="50" min="1"/></div>
+          </div>
+          <button class="green-btn" onclick="createBonusCode()">✅ কোড তৈরি করুন</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>কোড</th><th>পরিমাণ</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="bonusTableBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- DEPOSIT -->
+      <div class="section" id="sec-deposit">
+        <div class="sec-title">💰 ডিপোজিট রিকোয়েস্ট</div>
+        <div class="card">
+          <p style="font-size:.85rem;color:var(--text2);line-height:1.8">ডিপোজিট রিকোয়েস্ট টেলিগ্রামের মাধ্যমে আসে। ইউজার পেমেন্ট করার পর নিচে থেকে ম্যানুয়ালি ডায়মন্ড দিন।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">💰 সাম্প্রতিক লেনদেন</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>সময়</th><th>ইউজার</th><th>বিবরণ</th><th>পরিমাণ</th></tr></thead>
+            <tbody id="txTableBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="adminToast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, query, where, getDocs, addDoc, serverTimestamp,
+  orderBy, increment, limit }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyAXweLVcA5wMSEm67Yc023lEeiDU_Z0Wqs",
+  authDomain:"adstrra-earn.firebaseapp.com",
+  projectId:"adstrra-earn",
+  storageBucket:"adstrra-earn.firebasestorage.app",
+  messagingSenderId:"230480314135",
+  appId:"1:230480314135:web:4381de2eae27ae3922c152"
+};
+
+const ADMIN_EMAIL = 'siam@gmail.com';
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── AUTH ─────────────────────────────────────────
+window.adminLogin = async () => {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display='none';
+  if(email.toLowerCase() !== ADMIN_EMAIL){errEl.textContent='অ্যাডমিন একাউন্ট নয়।';errEl.style.display='block';return;}
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+  }catch(e){
+    errEl.textContent='ইমেল বা পাসওয়ার্ড ভুল।';errEl.style.display='block';
+  }
+};
+
+window.adminLogout = async () => { await signOut(auth); };
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user && user.email.toLowerCase()===ADMIN_EMAIL){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+    loadAllData();
+  } else {
+    document.getElementById('adminLogin').style.display='flex';
+    document.getElementById('adminApp').style.display='none';
+  }
+});
+
+// ─── NAVIGATION ───────────────────────────────────
+window.showSec = (id, btn) => {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='users') loadUsers();
+  if(id==='bonus') loadBonusCodes();
+  if(id==='deposit') loadTransactions();
+  if(id==='ads') loadAdsTable();
+  if(id==='visits') loadVisitsTable();
+};
+
+// ─── LOAD ALL ─────────────────────────────────────
+async function loadAllData(){
+  showLoader(true);
+  await Promise.all([loadOverview(), loadAdsTable(), loadVisitsTable()]);
+  showLoader(false);
+}
+
+async function loadOverview(){
+  // Users count
+  const usersSnap = await getDocs(collection(db,'users'));
+  document.getElementById('ovTotalUsers').textContent = usersSnap.size;
+
+  // Ads
+  const adsSnap = await getDocs(collection(db,'ads'));
+  let pending=0,active=0;
+  adsSnap.forEach(d=>{ const s=d.data().status; if(s==='pending')pending++; if(s==='approved')active++; });
+  document.getElementById('ovPendingAds').textContent=pending;
+  document.getElementById('ovActiveAds').textContent=active;
+
+  // Visits pending
+  const visSnap = await getDocs(query(collection(db,'visits'),where('status','==','pending')));
+  document.getElementById('ovPendingVisits').textContent=visSnap.size;
+
+  // Tx count
+  const txSnap = await getDocs(collection(db,'transactions'));
+  document.getElementById('ovTotalTx').textContent=txSnap.size;
+
+  // Quick pending ads
+  const pAds = await getDocs(query(collection(db,'ads'),where('status','==','pending')));
+  const qpAds = document.getElementById('quickPendingAds');
+  if(pAds.empty){ qpAds.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem">কোনো পেন্ডিং অ্যাড নেই</p>'; }
+  else {
+    let html='';
+    pAds.forEach(d=>{
+      const a=d.data(),id=d.id;
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem;border-bottom:1px solid var(--border)">
+        <div>
+          <span style="font-weight:700;font-size:.88rem">${a.title||'অ্যাড'}</span>
+          <span style="color:var(--muted);font-size:.75rem;margin-left:.4rem">(${[a.url1,a.url2,a.url3].filter(Boolean).length} লিংক)</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-green btn-sm" onclick="approveAd('${id}')">✅ অ্যাপ্রুভ</button>
+          <button class="btn btn-red btn-sm" onclick="rejectAd('${id}')">❌ বাতিল</button>
+        </div>
+      </div>`;
+    });
+    qpAds.innerHTML=html;
+  }
+
+  // Quick pending visits
+  const qpVisits = document.getElementById('quickPendingVisits');
+  if(visSnap.empty){ qpVisits.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem">কোনো পেন্ডিং ভিজিট নেই</p>'; }
+  else {
+    let html='';
+    visSnap.forEach(d=>{
+      const v=d.data(),id=d.id;
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem;border-bottom:1px solid var(--border)">
+        <div>
+          <span style="font-weight:700;font-size:.88rem">${v.title||'ভিজিট'}</span>
+          <a href="${v.url}" target="_blank" style="color:var(--blue);font-size:.72rem;margin-left:.4rem;display:inline-block">${v.url?.slice(0,30)||''}...</a>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-green btn-sm" onclick="approveVisit('${id}')">✅ অ্যাপ্রুভ</button>
+          <button class="btn btn-red btn-sm" onclick="rejectVisit('${id}')">❌ বাতিল</button>
+        </div>
+      </div>`;
+    });
+    qpVisits.innerHTML=html;
+  }
+}
+
+// ─── ADS TABLE ────────────────────────────────────
+async function loadAdsTable(){
+  const snap = await getDocs(query(collection(db,'ads'),orderBy('createdAt','desc')));
+  const tbody = document.getElementById('adsTableBody');
+  if(snap.empty){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">কোনো অ্যাড নেই</td></tr>';return;}
+  let html='';
+  snap.forEach(d=>{
+    const a=d.data(),id=d.id;
+    const urls=[a.url1,a.url2,a.url3].filter(Boolean);
+    html+=`<tr>
+      <td style="font-weight:600">${a.title||'—'}</td>
+      <td style="font-size:.75rem;color:var(--blue)">${urls.length} টি লিংক</td>
+      <td>${a.views||0}/${a.remainViews||100}</td>
+      <td><span class="badge ${a.status==='approved'?'approved':a.status==='rejected'?'rejected':'pending'}">${a.status==='approved'?'সক্রিয়':a.status==='rejected'?'বাতিল':'পেন্ডিং'}</span></td>
+      <td>
+        <div class="btn-row">
+          ${a.status==='pending'?`<button class="btn btn-green btn-sm" onclick="approveAd('${id}')">✅</button><button class="btn btn-red btn-sm" onclick="rejectAd('${id}')">❌</button>`:''}
+          ${a.status==='approved'?`<button class="btn btn-red btn-sm" onclick="rejectAd('${id}')">বন্ধ</button>`:''}
+          <button class="btn btn-sm" style="background:var(--muted);color:#fff" onclick="deleteAd('${id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+window.approveAd = async (id) => {
+  await updateDoc(doc(db,'ads',id),{status:'approved'});
+  toast('অ্যাড অ্যাপ্রুভ হয়েছে ✅');
+  loadAllData();
+};
+window.rejectAd = async (id) => {
+  await updateDoc(doc(db,'ads',id),{status:'rejected'});
+  toast('অ্যাড বাতিল হয়েছে','red');
+  loadAllData();
+};
+window.deleteAd = async (id) => {
+  if(!confirm('এই অ্যাড মুছবেন?')) return;
+  await deleteDoc(doc(db,'ads',id));
+  toast('অ্যাড মুছে গেছে','red');
+  loadAdsTable();
+};
+
+// ─── VISITS TABLE ─────────────────────────────────
+async function loadVisitsTable(){
+  const snap = await getDocs(query(collection(db,'visits'),orderBy('createdAt','desc')));
+  const tbody = document.getElementById('visitsTableBody');
+  if(snap.empty){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">কোনো ভিজিট নেই</td></tr>';return;}
+  let html='';
+  snap.forEach(d=>{
+    const v=d.data(),id=d.id;
+    html+=`<tr>
+      <td style="font-weight:600">${v.title||'—'}</td>
+      <td><a href="${v.url}" target="_blank" style="color:var(--blue);font-size:.75rem">${v.url?.slice(0,30)||''}...</a></td>
+      <td>${v.views||0}/${v.remainViews||100}</td>
+      <td><span class="badge ${v.status==='approved'?'approved':v.status==='rejected'?'rejected':'pending'}">${v.status==='approved'?'সক্রিয়':v.status==='rejected'?'বাতিল':'পেন্ডিং'}</span></td>
+      <td>
+        <div class="btn-row">
+          ${v.status==='pending'?`<button class="btn btn-green btn-sm" onclick="approveVisit('${id}')">✅</button><button class="btn btn-red btn-sm" onclick="rejectVisit('${id}')">❌</button>`:''}
+          ${v.status==='approved'?`<button class="btn btn-red btn-sm" onclick="rejectVisit('${id}')">বন্ধ</button>`:''}
+          <button class="btn btn-sm" style="background:var(--muted);color:#fff" onclick="deleteVisit('${id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+window.approveVisit = async (id) => {
+  await updateDoc(doc(db,'visits',id),{status:'approved'});
+  toast('ভিজিট অ্যাপ্রুভ হয়েছে ✅');
+  loadAllData();
+};
+window.rejectVisit = async (id) => {
+  await updateDoc(doc(db,'visits',id),{status:'rejected'});
+  toast('ভিজিট বাতিল হয়েছে','red');
+  loadAllData();
+};
+window.deleteVisit = async (id) => {
+  if(!confirm('এই ভিজিট মুছবেন?')) return;
+  await deleteDoc(doc(db,'visits',id));
+  toast('ভিজিট মুছে গেছে','red');
+  loadVisitsTable();
+};
+
+// ─── USERS ────────────────────────────────────────
+async function loadUsers(){
+  const snap = await getDocs(collection(db,'users'));
+  const tbody = document.getElementById('usersTableBody');
+  if(snap.empty){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">কোনো ইউজার নেই</td></tr>';return;}
+  let html='';
+  snap.forEach(d=>{
+    const u=d.data(),id=d.id;
+    html+=`<tr>
+      <td style="font-weight:600">${u.name||'—'}</td>
+      <td style="font-size:.78rem;color:var(--muted)">${u.email||'—'}</td>
+      <td><span style="color:var(--green);font-weight:700">💎 ${u.balance||0}</span></td>
+      <td>${u.adsCompleted||0}</td>
+      <td>${u.visitsCompleted||0}</td>
+      <td>
+        <button class="btn btn-blue btn-sm" onclick="openGiveDiamond('${id}','${u.email||''}')">💎 দিন</button>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+// Store selected uid globally
+let selectedUserUid = '';
+let selectedUserName = '';
+
+window.openGiveDiamond = (uid, email) => {
+  selectedUserUid = uid;
+  selectedUserName = email;
+  document.getElementById('giveEmail').value = email;
+  document.getElementById('giveAmount').focus();
+  toast('ইউজার সিলেক্ট হয়েছে: ' + email);
+};
+
+window.giveDiamond = async () => {
+  const amount = parseInt(document.getElementById('giveAmount').value)||0;
+  const emailVal = document.getElementById('giveEmail').value.trim();
+
+  if(!emailVal){toast('ইমেল দিন বা ইউজার লিস্ট থেকে সিলেক্ট করুন','red');return;}
+  if(amount<=0){toast('ডায়মন্ড পরিমাণ দিন','red');return;}
+
+  let uid = selectedUserUid;
+
+  // যদি uid না থাকে তাহলে email দিয়ে খুঁজুন
+  if(!uid){
+    showLoader(true);
+    const q = query(collection(db,'users'), where('email','==', emailVal));
+    const snap = await getDocs(q);
+    showLoader(false);
+    if(snap.empty){
+      toast('এই ইমেলের কোনো ইউজার নেই','red');
+      return;
+    }
+    uid = snap.docs[0].id;
+  }
+
+  try {
+    showLoader(true);
+    await updateDoc(doc(db,'users', uid), {balance: increment(amount)});
+    await addDoc(collection(db,'transactions'), {
+      uid,
+      amount,
+      desc: `💰 এডমিন ডিপোজিট (${emailVal})`,
+      createdAt: serverTimestamp()
+    });
+    showLoader(false);
+    toast(`✅ ${emailVal} কে 💎 ${amount} ডায়মন্ড দেওয়া হয়েছে!`);
+    document.getElementById('giveEmail').value = '';
+    document.getElementById('giveAmount').value = '';
+    selectedUserUid = '';
+    selectedUserName = '';
+    loadUsers();
+  } catch(e) {
+    showLoader(false);
+    toast('সমস্যা হয়েছে: ' + e.message, 'red');
+  }
+};
+
+// ─── BONUS CODES ──────────────────────────────────
+async function loadBonusCodes(){
+  const snap = await getDocs(collection(db,'bonusCodes'));
+  const tbody = document.getElementById('bonusTableBody');
+  if(snap.empty){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">কোনো কোড নেই</td></tr>';return;}
+  let html='';
+  snap.forEach(d=>{
+    const c=d.data(),id=d.id;
+    html+=`<tr>
+      <td><span style="font-weight:700;letter-spacing:1px;font-family:monospace;font-size:.88rem">${id}</span></td>
+      <td><span style="color:var(--green);font-weight:700">💎 ${c.amount}</span></td>
+      <td><span class="badge ${c.active?'approved':'rejected'}">${c.active?'সক্রিয়':'নিষ্ক্রিয়'}</span></td>
+      <td>
+        <div class="btn-row">
+          <button class="btn ${c.active?'btn-red':'btn-green'} btn-sm" onclick="toggleCode('${id}',${c.active})">
+            ${c.active?'বন্ধ করুন':'চালু করুন'}
+          </button>
+          <button class="btn btn-sm" style="background:var(--muted);color:#fff" onclick="deleteCode('${id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+window.createBonusCode = async () => {
+  const codeName = document.getElementById('newCodeName').value.trim().toUpperCase();
+  const amount = parseInt(document.getElementById('newCodeAmount').value)||0;
+  if(!codeName){toast('কোড লিখুন','red');return;}
+  if(amount<=0){toast('পরিমাণ দিন','red');return;}
+  await setDoc(doc(db,'bonusCodes',codeName),{amount, active:true, createdAt:serverTimestamp()});
+  toast(`কোড "${codeName}" তৈরি হয়েছে ✅`);
+  document.getElementById('newCodeName').value='';
+  document.getElementById('newCodeAmount').value='';
+  loadBonusCodes();
+};
+
+window.toggleCode = async (id, currentActive) => {
+  await updateDoc(doc(db,'bonusCodes',id),{active:!currentActive});
+  toast(currentActive?'কোড বন্ধ করা হয়েছে':'কোড চালু করা হয়েছে');
+  loadBonusCodes();
+};
+
+window.deleteCode = async (id) => {
+  if(!confirm(`"${id}" কোড মুছবেন?`)) return;
+  await deleteDoc(doc(db,'bonusCodes',id));
+  toast('কোড মুছে গেছে','red');
+  loadBonusCodes();
+};
+
+// ─── TRANSACTIONS ─────────────────────────────────
+async function loadTransactions(){
+  const snap = await getDocs(query(collection(db,'transactions'),orderBy('createdAt','desc'),limit(50)));
+  const tbody = document.getElementById('txTableBody');
+  if(snap.empty){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">কোনো লেনদেন নেই</td></tr>';return;}
+  let html='';
+  snap.forEach(d=>{
+    const t=d.data();
+    const time=t.createdAt?.toDate?.()?.toLocaleString('bn-BD')||'—';
+    html+=`<tr>
+      <td style="font-size:.75rem;color:var(--muted)">${time}</td>
+      <td style="font-size:.75rem;color:var(--blue)">${t.uid?.slice(0,8)||'—'}...</td>
+      <td>${t.desc||'—'}</td>
+      <td class="${t.amount>0?'':''}"><span style="font-weight:700;color:${t.amount>0?'var(--green)':'var(--red)'}">${t.amount>0?'+':''}${t.amount} 💎</span></td>
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+// ─── HELPERS ──────────────────────────────────────
+function toast(msg, type=''){
+  const el=document.getElementById('adminToast');
+  el.textContent=msg;
+  el.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>{el.classList.remove('show');},3000);
+}
+function showLoader(v){document.getElementById('loader').style.display=v?'flex':'none';}
+</script>
+</body>
+</html>
