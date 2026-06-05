@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Adstrra Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0fdf4;--surface:#fff;--card:#fff;
+  --green:#16a34a;--gl:#dcfce7;--gd:#15803d;
+  --red:#ef4444;--rl:#fee2e2;
+  --blue:#3b82f6;--bl:#dbeafe;
+  --yellow:#f59e0b;--yl:#fef3c7;
+  --border:#e2e8f0;--bg2:#bbf7d0;
+  --text:#1e293b;--t2:#475569;--muted:#94a3b8;
+  --sh:0 1px 3px rgba(0,0,0,0.08);--shm:0 4px 12px rgba(0,0,0,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+#adminLogin{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+.login-box{background:#fff;border:1px solid var(--border);border-radius:20px;padding:2.2rem 1.8rem;max-width:370px;width:100%;box-shadow:var(--shm);}
+.login-title{font-size:1.5rem;font-weight:800;color:var(--green);text-align:center;margin-bottom:1.4rem;}
+.fg{margin-bottom:.8rem;}
+.fg label{display:block;font-size:.78rem;font-weight:600;color:var(--t2);margin-bottom:4px;}
+.fg input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;}
+.fg input:focus{border-color:var(--green);}
+.login-btn{width:100%;padding:11px;border:none;border-radius:12px;background:var(--green);color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;}
+.login-btn:hover{background:var(--gd);}
+.login-err{color:var(--red);font-size:.8rem;text-align:center;margin-top:.6rem;display:none;padding:6px;background:var(--rl);border-radius:8px;}
+
+/* LAYOUT */
+#adminApp{display:none;}
+.anav{background:var(--green);color:#fff;padding:.75rem 1.2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(22,163,74,0.3);}
+.anav-logo{font-size:1.1rem;font-weight:800;}
+.logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:5px 13px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,0.3);}
+.a-shell{display:flex;min-height:calc(100vh - 48px);}
+
+/* SIDEBAR */
+.sidebar{width:190px;background:#fff;border-right:1px solid var(--border);padding:.8rem .5rem;flex-shrink:0;}
+@media(max-width:600px){.sidebar{width:52px;}}
+.s-btn{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:10px;cursor:pointer;border:none;background:none;width:100%;color:var(--t2);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:500;transition:all .2s;margin-bottom:2px;white-space:nowrap;}
+.s-btn:hover{background:var(--gl);color:var(--gd);}
+.s-btn.active{background:var(--gl);color:var(--green);font-weight:700;}
+.s-ic{font-size:1.05rem;flex-shrink:0;}
+@media(max-width:600px){.s-btn .s-lbl{display:none;}}
+
+/* MAIN */
+.a-main{flex:1;padding:1.1rem;overflow-x:hidden;}
+.sec{display:none;}
+.sec.active{display:block;}
+.sec-title{font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:1rem;}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;box-shadow:var(--sh);}
+.card-title{font-weight:700;font-size:.9rem;margin-bottom:.8rem;color:var(--text);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem;margin-bottom:1.1rem;}
+.stat-c{background:#fff;border:1px solid var(--border);border-radius:12px;padding:.85rem;text-align:center;}
+.stat-c .sv{font-size:1.5rem;font-weight:800;color:var(--green);}
+.stat-c .sl{font-size:.7rem;color:var(--muted);margin-top:2px;}
+
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.8rem;}
+th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);}
+th{font-weight:700;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;background:var(--bg);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,.01);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;}
+.badge.pending{background:var(--yl);color:#92400e;}
+.badge.approved{background:var(--gl);color:var(--gd);}
+.badge.rejected{background:var(--rl);color:var(--red);}
+
+/* BUTTONS */
+.btn{padding:5px 11px;border:none;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.76rem;font-weight:600;transition:all .2s;}
+.bg{background:var(--green);color:#fff;}.bg:hover{background:var(--gd);}
+.br{background:var(--red);color:#fff;}.br:hover{background:#dc2626;}
+.bb{background:var(--blue);color:#fff;}
+.btn-row{display:flex;gap:.35rem;flex-wrap:wrap;}
+
+/* FORM */
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+@media(max-width:500px){.fr2{grid-template-columns:1fr;}}
+.fl{display:flex;flex-direction:column;gap:4px;margin-bottom:.7rem;}
+.fl label{font-size:.76rem;font-weight:600;color:var(--t2);}
+.fi{padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--green);}
+.green-btn{width:100%;padding:10px;border:none;border-radius:10px;background:var(--green);color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;margin-top:.3rem;}
+.green-btn:hover{background:var(--gd);}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:9px 16px;border-radius:20px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;}
+.toast.show{opacity:1;}
+.toast.red{background:var(--red);}
+
+/* LOADER */
+.loader{position:fixed;inset:0;background:rgba(255,255,255,0.9);display:none;align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:.6rem;}
+.spinner{width:34px;height:34px;border:4px solid var(--bg2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="spinner"></div><p style="color:var(--muted);font-size:.8rem">Loading...</p></div>
+
+<!-- LOGIN -->
+<div id="adminLogin">
+  <div class="login-box">
+    <div class="login-title">🔐 Admin Panel<br/><span style="font-size:.85rem;color:var(--muted);font-weight:500">Adstrra Earn</span></div>
+    <div class="fg"><label>Email</label><input type="email" id="aEmail" placeholder="admin@email.com"/></div>
+    <div class="fg"><label>Password</label><input type="password" id="aPass" placeholder="Password"/></div>
+    <button class="login-btn" onclick="adminLogin()">Login</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="adminApp">
+  <div class="anav">
+    <div class="anav-logo">⚙️ Adstrra Admin</div>
+    <button class="logout-btn" onclick="adminLogout()">Logout</button>
+  </div>
+  <div class="a-shell">
+    <div class="sidebar">
+      <button class="s-btn active" onclick="showSec('overview',this)"><span class="s-ic">📊</span><span class="s-lbl">Overview</span></button>
+      <button class="s-btn" onclick="showSec('ads',this)"><span class="s-ic">📺</span><span class="s-lbl">Ads</span></button>
+      <button class="s-btn" onclick="showSec('visits',this)"><span class="s-ic">🌐</span><span class="s-lbl">Visits</span></button>
+      <button class="s-btn" onclick="showSec('users',this)"><span class="s-ic">👥</span><span class="s-lbl">Users</span></button>
+      <button class="s-btn" onclick="showSec('bonus',this)"><span class="s-ic">🎁</span><span class="s-lbl">Bonus</span></button>
+      <button class="s-btn" onclick="showSec('transactions',this)"><span class="s-ic">💰</span><span class="s-lbl">Transactions</span></button>
+    </div>
+    <div class="a-main">
+
+      <!-- OVERVIEW -->
+      <div class="sec active" id="sec-overview">
+        <div class="sec-title">📊 Overview</div>
+        <div class="stats-row">
+          <div class="stat-c"><div class="sv" id="ovUsers">0</div><div class="sl">Total Users</div></div>
+          <div class="stat-c"><div class="sv" id="ovPendAds">0</div><div class="sl">Pending Ads</div></div>
+          <div class="stat-c"><div class="sv" id="ovActiveAds">0</div><div class="sl">Active Ads</div></div>
+          <div class="stat-c"><div class="sv" id="ovPendVisits">0</div><div class="sl">Pending Visits</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ Pending Ads</div>
+          <div id="qpAds"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ Pending Visits</div>
+          <div id="qpVisits"></div>
+        </div>
+      </div>
+
+      <!-- ADS -->
+      <div class="sec" id="sec-ads">
+        <div class="sec-title">📺 All Ads</div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Title</th><th>Links</th><th>Views</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="adsTbody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- VISITS -->
+      <div class="sec" id="sec-visits">
+        <div class="sec-title">🌐 All Visits</div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Name</th><th>URL</th><th>Visits</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="visitsTbody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="sec" id="sec-users">
+        <div class="sec-title">👥 All Users</div>
+        <div class="card">
+          <div class="card-title">💎 Give Diamonds to User</div>
+          <div class="fr2">
+            <div class="fl"><label>User Email</label><input class="fi" type="email" id="giveEmail" placeholder="user@email.com"/></div>
+            <div class="fl"><label>Amount</label><input class="fi" type="number" id="giveAmount" placeholder="100" min="1"/></div>
+          </div>
+          <button class="green-btn" onclick="giveDiamond()">💎 Give Diamonds</button>
+        </div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Ads</th><th>Visits</th><th>Action</th></tr></thead>
+          <tbody id="usersTbody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- BONUS -->
+      <div class="sec" id="sec-bonus">
+        <div class="sec-title">🎁 Bonus Codes</div>
+        <div class="card">
+          <div class="card-title">➕ Create Bonus Code</div>
+          <div class="fr2">
+            <div class="fl"><label>Code Name</label><input class="fi" type="text" id="newCode" placeholder="WELCOME50" style="text-transform:uppercase"/></div>
+            <div class="fl"><label>💎 Amount</label><input class="fi" type="number" id="newCodeAmt" placeholder="50" min="1"/></div>
+          </div>
+          <button class="green-btn" onclick="createCode()">✅ Create Code</button>
+        </div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Code</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="bonusTbody"></tbody>
+        </table></div></div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="sec" id="sec-transactions">
+        <div class="sec-title">💰 Transactions</div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Time</th><th>User</th><th>Description</th><th>Amount</th></tr></thead>
+          <tbody id="txTbody"></tbody>
+        </table></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="adminToast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, query, where, getDocs, addDoc, serverTimestamp,
+  orderBy, increment, limit }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FC={
+  apiKey:"AIzaSyAXweLVcA5wMSEm67Yc023lEeiDU_Z0Wqs",
+  authDomain:"adstrra-earn.firebaseapp.com",
+  projectId:"adstrra-earn",
+  storageBucket:"adstrra-earn.firebasestorage.app",
+  messagingSenderId:"230480314135",
+  appId:"1:230480314135:web:4381de2eae27ae3922c152"
+};
+const ADMIN_EMAIL='siam@gmail.com';
+const app=initializeApp(FC);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let selectedUid='';
+
+// AUTH
+window.adminLogin = async () => {
+  const e=document.getElementById('aEmail').value.trim().toLowerCase();
+  const p=document.getElementById('aPass').value;
+  const err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(e!==ADMIN_EMAIL){err.textContent='Not an admin account.';err.style.display='block';return;}
+  try{ await signInWithEmailAndPassword(auth,e,p); }
+  catch(ex){ err.textContent='Wrong email or password.';err.style.display='block'; }
+};
+
+window.adminLogout = async () => { await signOut(auth); };
+
+onAuthStateChanged(auth, async user => {
+  if(user && user.email.toLowerCase()===ADMIN_EMAIL){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+    loadAll();
+  } else {
+    document.getElementById('adminLogin').style.display='flex';
+    document.getElementById('adminApp').style.display='none';
+  }
+});
+
+// NAV
+window.showSec = (id,btn) => {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='users') loadUsers();
+  if(id==='bonus') loadBonusCodes();
+  if(id==='transactions') loadTx();
+  if(id==='ads') loadAdsTable();
+  if(id==='visits') loadVisitsTable();
+};
+
+async function loadAll(){
+  showLoader(true);
+  await Promise.all([loadOverview(),loadAdsTable(),loadVisitsTable()]);
+  showLoader(false);
+}
+
+// OVERVIEW
+async function loadOverview(){
+  const [usersSnap,adsSnap,visSnap]=await Promise.all([
+    getDocs(collection(db,'users')),
+    getDocs(collection(db,'ads')),
+    getDocs(query(collection(db,'visits'),where('status','==','pending')))
+  ]);
+  document.getElementById('ovUsers').textContent=usersSnap.size;
+  document.getElementById('ovPendVisits').textContent=visSnap.size;
+  let pAds=0,aAds=0;
+  adsSnap.forEach(d=>{const s=d.data().status;if(s==='pending')pAds++;if(s==='approved')aAds++;});
+  document.getElementById('ovPendAds').textContent=pAds;
+  document.getElementById('ovActiveAds').textContent=aAds;
+
+  // Quick pending ads
+  const pAdsSnap=await getDocs(query(collection(db,'ads'),where('status','==','pending')));
+  const qpAds=document.getElementById('qpAds');
+  if(pAdsSnap.empty){qpAds.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem">No pending ads</p>';}
+  else{
+    let h='';
+    pAdsSnap.forEach(d=>{
+      const a=d.data(),id=d.id;
+      const urls=[a.url1,a.url2,a.url3,a.url4,a.url5,a.url6].filter(Boolean);
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem;border-bottom:1px solid var(--border)">
+        <div><span style="font-weight:700;font-size:.86rem">${a.title||'Ad'}</span> <span style="color:var(--muted);font-size:.74rem">(${urls.length} links)</span></div>
+        <div class="btn-row"><button class="btn bg" onclick="approveAd('${id}')">✅ Approve</button><button class="btn br" onclick="rejectAd('${id}')">❌ Reject</button></div>
+      </div>`;
+    });
+    qpAds.innerHTML=h;
+  }
+
+  // Quick pending visits
+  const qpVisits=document.getElementById('qpVisits');
+  if(visSnap.empty){qpVisits.innerHTML='<p style="color:var(--muted);font-size:.82rem;padding:.5rem">No pending visits</p>';}
+  else{
+    let h='';
+    visSnap.forEach(d=>{
+      const v=d.data(),id=d.id;
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem;border-bottom:1px solid var(--border)">
+        <div><span style="font-weight:700;font-size:.86rem">${v.title||'Visit'}</span> <a href="${v.url}" target="_blank" style="color:var(--blue);font-size:.72rem;margin-left:.3rem">${(v.url||'').slice(0,30)}...</a></div>
+        <div class="btn-row"><button class="btn bg" onclick="approveVisit('${id}')">✅ Approve</button><button class="btn br" onclick="rejectVisit('${id}')">❌ Reject</button></div>
+      </div>`;
+    });
+    qpVisits.innerHTML=h;
+  }
+}
+
+// ADS TABLE
+async function loadAdsTable(){
+  const snap=await getDocs(query(collection(db,'ads'),orderBy('createdAt','desc')));
+  const tb=document.getElementById('adsTbody');
+  if(snap.empty){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">No ads</td></tr>';return;}
+  let h='';
+  snap.forEach(d=>{
+    const a=d.data(),id=d.id;
+    const urls=[a.url1,a.url2,a.url3,a.url4,a.url5,a.url6].filter(Boolean);
+    h+=`<tr>
+      <td style="font-weight:600">${a.title||'—'}</td>
+      <td>${urls.length}</td>
+      <td>${a.views||0}/${a.remainViews||100}</td>
+      <td><span class="badge ${a.status==='approved'?'approved':a.status==='rejected'?'rejected':'pending'}">${a.status}</span></td>
+      <td><div class="btn-row">
+        ${a.status==='pending'?`<button class="btn bg" onclick="approveAd('${id}')">✅</button><button class="btn br" onclick="rejectAd('${id}')">❌</button>`:''}
+        ${a.status==='approved'?`<button class="btn br" onclick="rejectAd('${id}')">Stop</button>`:''}
+        <button class="btn" style="background:var(--muted);color:#fff" onclick="deleteAd('${id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+window.approveAd=async id=>{await updateDoc(doc(db,'ads',id),{status:'approved'});toast('Ad approved ✅');loadAll();};
+window.rejectAd=async id=>{await updateDoc(doc(db,'ads',id),{status:'rejected'});toast('Ad rejected','red');loadAll();};
+window.deleteAd=async id=>{if(!confirm('Delete this ad?'))return;await deleteDoc(doc(db,'ads',id));toast('Deleted','red');loadAdsTable();};
+
+// VISITS TABLE
+async function loadVisitsTable(){
+  const snap=await getDocs(query(collection(db,'visits'),orderBy('createdAt','desc')));
+  const tb=document.getElementById('visitsTbody');
+  if(snap.empty){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">No visits</td></tr>';return;}
+  let h='';
+  snap.forEach(d=>{
+    const v=d.data(),id=d.id;
+    h+=`<tr>
+      <td style="font-weight:600">${v.title||'—'}</td>
+      <td><a href="${v.url}" target="_blank" style="color:var(--blue);font-size:.75rem">${(v.url||'').slice(0,28)}...</a></td>
+      <td>${v.views||0}/${v.remainViews||100}</td>
+      <td><span class="badge ${v.status==='approved'?'approved':v.status==='rejected'?'rejected':'pending'}">${v.status}</span></td>
+      <td><div class="btn-row">
+        ${v.status==='pending'?`<button class="btn bg" onclick="approveVisit('${id}')">✅</button><button class="btn br" onclick="rejectVisit('${id}')">❌</button>`:''}
+        ${v.status==='approved'?`<button class="btn br" onclick="rejectVisit('${id}')">Stop</button>`:''}
+        <button class="btn" style="background:var(--muted);color:#fff" onclick="deleteVisit('${id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+window.approveVisit=async id=>{await updateDoc(doc(db,'visits',id),{status:'approved'});toast('Visit approved ✅');loadAll();};
+window.rejectVisit=async id=>{await updateDoc(doc(db,'visits',id),{status:'rejected'});toast('Visit rejected','red');loadAll();};
+window.deleteVisit=async id=>{if(!confirm('Delete this visit?'))return;await deleteDoc(doc(db,'visits',id));toast('Deleted','red');loadVisitsTable();};
+
+// USERS
+async function loadUsers(){
+  const snap=await getDocs(collection(db,'users'));
+  const tb=document.getElementById('usersTbody');
+  if(snap.empty){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">No users</td></tr>';return;}
+  let h='';
+  snap.forEach(d=>{
+    const u=d.data(),id=d.id;
+    h+=`<tr>
+      <td style="font-weight:600">${u.name||'—'}</td>
+      <td style="font-size:.76rem;color:var(--muted)">${u.email||'—'}</td>
+      <td><span style="color:var(--green);font-weight:700">💎 ${u.balance||0}</span></td>
+      <td>${u.adsCompleted||0}</td>
+      <td>${u.visitsCompleted||0}</td>
+      <td><button class="btn bb" onclick="selectUser('${id}','${u.email||''}')">💎 Select</button></td>
+    </tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+window.selectUser=(uid,email)=>{
+  selectedUid=uid;
+  document.getElementById('giveEmail').value=email;
+  toast('User selected: '+email);
+};
+
+// GIVE DIAMOND — FIXED
+window.giveDiamond = async () => {
+  const email=document.getElementById('giveEmail').value.trim();
+  const amount=parseInt(document.getElementById('giveAmount').value)||0;
+  if(!email){toast('Enter user email','red');return;}
+  if(amount<=0){toast('Enter diamond amount','red');return;}
+
+  showLoader(true);
+  try{
+    let uid=selectedUid;
+    // If no uid selected, find by email
+    if(!uid){
+      const q=query(collection(db,'users'),where('email','==',email));
+      const snap=await getDocs(q);
+      if(snap.empty){
+        // try lowercase
+        const q2=query(collection(db,'users'),where('email','==',email.toLowerCase()));
+        const snap2=await getDocs(q2);
+        if(snap2.empty){showLoader(false);toast('User not found','red');return;}
+        uid=snap2.docs[0].id;
+      } else {
+        uid=snap.docs[0].id;
+      }
+    }
+    // Update balance
+    await updateDoc(doc(db,'users',uid),{balance:increment(amount)});
+    // Add transaction
+    await addDoc(collection(db,'transactions'),{
+      uid, amount, desc:`💰 Admin deposit (${email})`, createdAt:serverTimestamp()
+    });
+    showLoader(false);
+    toast(`✅ ${amount} 💎 sent to ${email}`);
+    document.getElementById('giveEmail').value='';
+    document.getElementById('giveAmount').value='';
+    selectedUid='';
+    loadUsers();
+  }catch(e){
+    showLoader(false);
+    toast('Error: '+e.message,'red');
+  }
+};
+
+// BONUS CODES
+async function loadBonusCodes(){
+  const snap=await getDocs(collection(db,'bonusCodes'));
+  const tb=document.getElementById('bonusTbody');
+  if(snap.empty){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">No codes</td></tr>';return;}
+  let h='';
+  snap.forEach(d=>{
+    const c=d.data(),id=d.id;
+    h+=`<tr>
+      <td><span style="font-weight:700;letter-spacing:1px;font-family:monospace">${id}</span></td>
+      <td><span style="color:var(--green);font-weight:700">💎 ${c.amount}</span></td>
+      <td><span class="badge ${c.active?'approved':'rejected'}">${c.active?'Active':'Inactive'}</span></td>
+      <td><div class="btn-row">
+        <button class="btn ${c.active?'br':'bg'}" onclick="toggleCode('${id}',${c.active})">${c.active?'Deactivate':'Activate'}</button>
+        <button class="btn" style="background:var(--muted);color:#fff" onclick="deleteCode('${id}')">🗑️</button>
+      </div></td>
+    </tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+window.createCode=async()=>{
+  const code=document.getElementById('newCode').value.trim().toUpperCase();
+  const amount=parseInt(document.getElementById('newCodeAmt').value)||0;
+  if(!code){toast('Enter code name','red');return;}
+  if(amount<=0){toast('Enter amount','red');return;}
+  await setDoc(doc(db,'bonusCodes',code),{amount,active:true,createdAt:serverTimestamp()});
+  toast(`Code "${code}" created ✅`);
+  document.getElementById('newCode').value='';
+  document.getElementById('newCodeAmt').value='';
+  loadBonusCodes();
+};
+window.toggleCode=async(id,active)=>{await updateDoc(doc(db,'bonusCodes',id),{active:!active});toast(active?'Code deactivated':'Code activated');loadBonusCodes();};
+window.deleteCode=async id=>{if(!confirm(`Delete code "${id}"?`))return;await deleteDoc(doc(db,'bonusCodes',id));toast('Deleted','red');loadBonusCodes();};
+
+// TRANSACTIONS
+async function loadTx(){
+  const snap=await getDocs(query(collection(db,'transactions'),orderBy('createdAt','desc'),limit(100)));
+  const tb=document.getElementById('txTbody');
+  if(snap.empty){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem">No transactions</td></tr>';return;}
+  let h='';
+  snap.forEach(d=>{
+    const t=d.data();
+    const time=t.createdAt?.toDate?.()?.toLocaleString('en-US',{hour12:false})||'—';
+    h+=`<tr>
+      <td style="font-size:.73rem;color:var(--muted)">${time}</td>
+      <td style="font-size:.73rem;color:var(--blue)">${(t.uid||'').slice(0,8)}...</td>
+      <td>${t.desc||'—'}</td>
+      <td><span style="font-weight:700;color:${t.amount>0?'var(--green)':'var(--red)'}">${t.amount>0?'+':''}${t.amount} 💎</span></td>
+    </tr>`;
+  });
+  tb.innerHTML=h;
+}
+
+// HELPERS
+function showLoader(v){document.getElementById('loader').style.display=v?'flex':'none';}
+function toast(msg,type=''){
+  const el=document.getElementById('adminToast');
+  el.textContent=msg;
+  el.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>{el.classList.remove('show');},3000);
+}
+</script>
+</body>
+</html>
